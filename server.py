@@ -8,15 +8,16 @@ stored = ""
 def setupServer():
     
     s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    print("Socket created with host " + str(host) + " on port " + str(port) + "!")
+    print('Socket created with host ' + str(host) + ' on port ' + str(port) + '!')
 
     try:
-        s.bind(host, port)
+        s.bind((host, port))
     except socket.error as msg:
         print(msg)
 
-    print ("Socket bind complete")
+    print ('Socket bind complete')
 
     return s
 
@@ -31,6 +32,19 @@ def setupConnection():
 
     return connection
 
+def GET():
+    
+    reply = 'Test Successful'
+    
+    return reply
+
+def REPEAT(dataMessage):
+    
+    reply = dataMessage[1]
+
+    return reply
+    
+
 def transfer(connection):
 
     while True:
@@ -38,6 +52,38 @@ def transfer(connection):
         data = data.decode('utf-8')
         dataMessage = data.split(' ', 1)
         command = dataMessage[0]
+
+        if command == 'TEST':
+            
+            reply = GET()
+            
+        elif command == 'REPEAT':
+            
+            reply = REPEAT(dataMessage)
+
+        elif command == 'EXIT':
+            
+            print("Connection terminated")
+            
+            break;
+
+        elif command == 'KILL':
+            
+            print("Server shutting down")
+            
+            s.close()
+            
+            break
+
+        else:
+            
+            reply = 'Unknown Command'
+
+        connection.sendall(str.encore(reply))
+        
+        print("Data sent")
+        
+    connection.close()
 
 
 s = setupServer()
