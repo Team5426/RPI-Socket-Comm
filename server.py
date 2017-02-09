@@ -92,6 +92,6 @@ s = setupServer()
 while True:
     try:
         connection = setupConnection()
-        dataTransfer(connection)
+        transfer(connection)
     except:
         break;
