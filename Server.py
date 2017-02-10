@@ -1,97 +1,38 @@
 import socket
+import sys
+import random
 
 host = ''
-port = 5560
+port = 5426
 
-stored = ""
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print("Socket created")
 
-def setupServer():
-    
-    s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+try:
+    s.bind((host, port))
+except socket.error as msg:
+    print("Failed to bind! Error code: " + str(msg[0]))
+    sys.exit()
 
-    print('Socket created with host ' + str(host) + ' on port ' + str(port) + '!')
+print("Socket bind successful")
 
-    try:
-        s.bind((host, port))
-    except socket.error as msg:
-        print(msg)
+s.listen(1)
+print("Listening...")
 
-    print ('Socket bind complete')
-
-    return s
-
-
-def setupConnection():
-    
-    s.listen(1)
-
-    connection, address = s.accept()
-
-    print("Connected to: " + address[0] + ":" + str(address[1]))
-
-    return connection
-
-def GET():
-    
-    reply = 'Test Successful'
-    
-    return reply
-
-def REPEAT(dataMessage):
-    
-    reply = dataMessage[1]
-
-    return reply
-    
-
-def transfer(connection):
-
-    while True:
-        data = connection.recv(1024) # Change buffer size if needed
-        data = data.decode('utf-8')
-        dataMessage = data.split(' ', 1)
-        command = dataMessage[0]
-
-        if command == 'TEST':
-            
-            reply = GET()
-            
-        elif command == 'REPEAT':
-            
-            reply = REPEAT(dataMessage)
-
-        elif command == 'EXIT':
-            
-            print("Connection terminated")
-            
-            break;
-
-        elif command == 'KILL':
-            
-            print("Server shutting down")
-            
-            s.close()
-            
-            break
-
-        else:
-            
-            reply = 'Unknown Command'
-
-        connection.sendall(str.encore(reply))
-        
-        print("Data sent")
-        
-    connection.close()
-
-
-s = setupServer()
-
+conn, addr = s.accept()
 
 while True:
-    try:
-        connection = setupConnection()
-        transfer(connection)
-    except:
-        break;
+    print("Connected with " + addr[0] + ":" + str(addr[1]))
+
+    message = "Unknown command";
+
+    data = conn.recv(4096)
+
+    r = lambda: random.randint(0, 255)
+
+    if data == 'GET':
+        message = str(r()) + "," + str(r()) + "," + str(r())
+
+    conn.sendall(message)
+
+conn.close()
